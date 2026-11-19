@@ -1,4 +1,3 @@
-import html
 import io
 import os
 import uuid
@@ -13,27 +12,9 @@ from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pypdf import PdfReader
 
+from utils.ui import empty_state, hero, source_card
+
 load_dotenv()
-
-st.set_page_config(page_title="Dokument-Assistent", page_icon="📄", layout="wide")
-
-st.markdown(
-    """
-    <style>
-    .source-card {
-        border-left: 3px solid #4f8bf9;
-        background: rgba(79, 139, 249, 0.08);
-        border-radius: 6px;
-        padding: 0.6rem 0.8rem;
-        margin-bottom: 0.5rem;
-        font-size: 0.9rem;
-    }
-    .source-card .source-title { font-weight: 600; margin-bottom: 0.25rem; }
-    .source-card .source-snippet { opacity: 0.8; font-size: 0.85rem; }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
 
 CHUNK_SIZE = 1000
 CHUNK_OVERLAP = 200
@@ -110,15 +91,8 @@ def unique_sources(docs) -> list[dict]:
 def render_sources(sources: list[dict]) -> None:
     if not sources:
         return
-    with st.expander(f"📚 Quellen ({len(sources)})"):
-        for s in sources:
-            st.markdown(
-                f"""<div class="source-card">
-                    <div class="source-title">📄 {html.escape(s['source'])} · Seite {s['page']}</div>
-                    <div class="source-snippet">{html.escape(s['snippet'])}</div>
-                </div>""",
-                unsafe_allow_html=True,
-            )
+    with st.expander(f"Quellen ({len(sources)})", icon=":material/menu_book:"):
+        st.html("".join(source_card(f"{s['source']} · Seite {s['page']}", s["snippet"]) for s in sources))
 
 
 def reset_index() -> None:
@@ -135,8 +109,12 @@ st.session_state.setdefault("indexed_files", [])
 st.session_state.setdefault("messages", [])
 
 # --- Header ---
-st.title("📄 Dokument-Assistent")
-st.caption("Lade PDFs hoch und stelle Fragen dazu. Jede Antwort enthält die Quellen mit Dokument und Seitenzahl.")
+hero(
+    "file-text",
+    "Dokument-Assistent",
+    "Lade PDFs hoch und stelle Fragen dazu. Jede Antwort enthält die Quellen mit Dokument und Seitenzahl.",
+    eyebrow="Agent 01 · RAG",
+)
 
 if not os.getenv("OPENAI_API_KEY"):
     st.error("Kein OpenAI API-Key gefunden. Bitte `OPENAI_API_KEY` in der `.env`-Datei eintragen und die App neu starten.")
@@ -170,7 +148,7 @@ with st.sidebar:
     if st.session_state.indexed_files:
         st.success(f"{len(st.session_state.indexed_files)} Dokument(e) bereit")
         for name in st.session_state.indexed_files:
-            st.markdown(f"- 📄 {name}")
+            st.markdown(f":material/description: {name}")
 
     if st.session_state.messages:
         st.divider()
@@ -180,7 +158,11 @@ with st.sidebar:
 
 # --- Chat ---
 if st.session_state.vectorstore is None:
-    st.info("👈 Lade links ein oder mehrere PDFs hoch und klicke auf **Dokumente verarbeiten**, um zu starten.")
+    empty_state(
+        "upload",
+        "Noch keine Dokumente",
+        "Lade links ein oder mehrere PDFs hoch und klicke auf „Dokumente verarbeiten“, um zu starten.",
+    )
     st.stop()
 
 for msg in st.session_state.messages:
@@ -204,7 +186,7 @@ if question := st.chat_input("Stelle eine Frage zu deinen Dokumenten …"):
             sources = unique_sources(docs)
             render_sources(sources)
         except Exception as e:
-            answer = f"⚠️ Es ist ein Fehler aufgetreten: {e}"
+            answer = f"Es ist ein Fehler aufgetreten: {e}"
             sources = []
             st.error(answer)
 

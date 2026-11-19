@@ -1,0 +1,22 @@
+# Design-Tokens für native Streamlit-Widgets. Ergänzendes CSS: utils/ui.py
+[theme]
+base = "dark"
+primaryColor = "#818cf8"
+backgroundColor = "#0f1117"
+secondaryBackgroundColor = "#171c27"
+textColor = "#e6e9f2"
+borderColor = "#262d3d"
+linkColor = "#a5b4fc"
+showWidgetBorder = true
+showSidebarBorder = false
+font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+headingFont = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+baseRadius = "0.75rem"
+buttonRadius = "0.75rem"
+
+[theme.sidebar]
+backgroundColor = "#0b0d13"
+secondaryBackgroundColor = "#151a24"
+
+[client]
+toolbarMode = "minimal"

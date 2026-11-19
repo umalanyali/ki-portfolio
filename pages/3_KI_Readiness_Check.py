@@ -1,6 +1,14 @@
-import streamlit as st
+from utils.ui import empty_state, hero
 
-st.set_page_config(page_title="KI-Readiness-Check", page_icon="✅", layout="wide")
+hero(
+    "gauge",
+    "KI-Readiness-Check",
+    "Bewertet den KI-Reifegrad eines Unternehmens entlang von Daten, Prozessen, Kompetenzen und Strategie.",
+    eyebrow="Agent 03 · Assessment",
+)
 
-st.title("✅ KI-Readiness-Check")
-st.info("Dieser Agent ist noch in Arbeit.")
+empty_state(
+    "clock",
+    "Dieser Agent ist in Arbeit",
+    "Hier entsteht ein geführter Check mit Score, Stärken-/Schwächenprofil und konkreten nächsten Schritten.",
+)
