@@ -11,7 +11,7 @@ from langchain_core.messages import AIMessage, ToolMessage
 from langchain_openai import ChatOpenAI
 from langchain_tavily import TavilySearch
 
-from utils.ui import empty_state, hero, source_card
+from utils.ui import empty_state, page_header, source_card
 
 load_dotenv()
 
@@ -143,12 +143,11 @@ def slugify(text: str) -> str:
 st.session_state.setdefault("analysis", None)
 
 # --- Header ---
-hero(
-    "building",
+page_header(
     "Unternehmensanalyse",
     "Gib einen Firmennamen ein – der KI-Agent recherchiert selbstständig im Web und erstellt "
     "einen strukturierten Report inklusive KI-Potenzialen.",
-    eyebrow="Agent 02 · Web-Recherche",
+    label="Agent 02",
 )
 
 missing = [key for key in ("OPENAI_API_KEY", "TAVILY_API_KEY") if not os.getenv(key)]
@@ -222,12 +221,8 @@ if analysis["industry"]:
     header += f" · {analysis['industry']}"
 
 with st.container(key="report"):
-    chips = [analysis["company"], analysis["industry"], f"{len(analysis['sources'])} Quellen"]
-    st.html(
-        '<div class="report-meta">'
-        + "".join(f'<span class="chip">{html.escape(c)}</span>' for c in chips if c)
-        + "</div>"
-    )
+    meta = [analysis["company"], analysis["industry"], f"{len(analysis['sources'])} Quellen"]
+    st.html(f'<span class="label">{html.escape(" · ".join(m for m in meta if m))}</span>')
     st.markdown(analysis["report"])
 
 render_sources(analysis["sources"])

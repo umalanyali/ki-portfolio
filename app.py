@@ -1,12 +1,13 @@
 import streamlit as st
 from dotenv import load_dotenv
 
-from utils.ui import apply_theme
+from utils.ui import apply_theme, social_links
 
 load_dotenv()
 
 st.set_page_config(page_title="KI-Portfolio", page_icon=":material/auto_awesome:", layout="wide")
 apply_theme()
+social_links()
 
 navigation = st.navigation(
     {

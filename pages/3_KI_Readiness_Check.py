@@ -1,10 +1,9 @@
-from utils.ui import empty_state, hero
+from utils.ui import empty_state, page_header
 
-hero(
-    "gauge",
+page_header(
     "KI-Readiness-Check",
     "Bewertet den KI-Reifegrad eines Unternehmens entlang von Daten, Prozessen, Kompetenzen und Strategie.",
-    eyebrow="Agent 03 · Assessment",
+    label="Agent 03",
 )
 
 empty_state(

@@ -8,47 +8,43 @@ AGENTS = [
     {
         "icon": "file-text",
         "title": "Dokument-Assistent",
-        "description": "Stelle Fragen an eigene PDFs und erhalte Antworten mit Seitenquellen.",
-        "tag": "RAG · ChromaDB",
+        "description": "Fragen an eigene PDFs stellen – mit Seitenangaben als Quelle.",
         "href": "dokument-assistent",
+        "available": True,
     },
     {
         "icon": "building",
         "title": "Unternehmensanalyse",
-        "description": "Ein Agent recherchiert im Web und erstellt einen strukturierten Report.",
-        "tag": "Agent · Tavily",
+        "description": "Ein Agent recherchiert im Web und schreibt einen strukturierten Report.",
         "href": "unternehmensanalyse",
+        "available": True,
     },
     {
         "icon": "gauge",
         "title": "KI-Readiness-Check",
-        "description": "Bewerte den KI-Reifegrad eines Unternehmens anhand klarer Kriterien.",
-        "tag": "Bald verfügbar",
+        "description": "Den KI-Reifegrad eines Unternehmens anhand klarer Kriterien bewerten.",
         "href": "ki-readiness-check",
+        "available": False,
     },
 ]
 
-STACK = ["Python", "Streamlit", "LangChain", "LangGraph", "OpenAI", "ChromaDB", "Tavily"]
 
-cards = "".join(
-    f"""<a class="glass feature-card" href="{a['href']}">
-        <div class="card-icon">{icon(a['icon'], 24)}</div>
-        <h3>{html.escape(a['title'])}</h3>
-        <p>{html.escape(a['description'])}</p>
-        <div class="card-footer"><span class="chip">{html.escape(a['tag'])}</span>
-            <span>Öffnen {icon('arrow-right', 16)}</span></div>
-    </a>"""
-    for a in AGENTS
-)
+def card(agent: dict) -> str:
+    footer = (
+        f'<span class="card-link">Öffnen {icon("chevron-right", 14)}</span>'
+        if agent["available"]
+        else '<span class="card-status">Bald verfügbar</span>'
+    )
+    return (
+        f'<a class="card feature-card" href="{agent["href"]}">{icon(agent["icon"], 28)}'
+        f'<h3>{html.escape(agent["title"])}</h3><p>{html.escape(agent["description"])}</p>{footer}</a>'
+    )
+
 
 st.html(
-    f"""<section class="hero hero--center">
-        <div class="hero-icon">{icon('sparkles', 28)}</div>
-        <div><span class="eyebrow">KI-Portfolio</span>
-            <h1>Drei KI-Agenten für echte Geschäftsfragen</h1>
-            <p>Von Dokumenten-Q&amp;A über autonome Webrecherche bis zur KI-Reifegrad-Analyse –
-               gebaut mit LangChain und modernen LLMs.</p></div>
-    </section>
-    <nav class="feature-grid" aria-label="KI-Agenten">{cards}</nav>
-    <div class="chip-row">{''.join(f'<span class="chip">{s}</span>' for s in STACK)}</div>"""
+    '<section class="home-hero"><h1>KI-Portfolio</h1>'
+    "<p>Drei KI-Agenten für echte Geschäftsfragen – von Dokumenten-Q&amp;A bis zur autonomen Webrecherche.</p>"
+    "</section>"
+    f'<nav class="feature-grid" aria-label="KI-Agenten">{"".join(card(a) for a in AGENTS)}</nav>'
+    '<p class="stack-note">Gebaut mit Python, Streamlit, LangChain, OpenAI und Tavily.</p>'
 )

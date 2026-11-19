@@ -12,7 +12,7 @@ from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pypdf import PdfReader
 
-from utils.ui import empty_state, hero, source_card
+from utils.ui import empty_state, page_header, source_card
 
 load_dotenv()
 
@@ -109,11 +109,10 @@ st.session_state.setdefault("indexed_files", [])
 st.session_state.setdefault("messages", [])
 
 # --- Header ---
-hero(
-    "file-text",
+page_header(
     "Dokument-Assistent",
     "Lade PDFs hoch und stelle Fragen dazu. Jede Antwort enthält die Quellen mit Dokument und Seitenzahl.",
-    eyebrow="Agent 01 · RAG",
+    label="Agent 01",
 )
 
 if not os.getenv("OPENAI_API_KEY"):

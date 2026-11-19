@@ -1,7 +1,7 @@
-"""Gemeinsames Design-System der App: Tokens, globales CSS und wiederverwendbare Bausteine.
+"""Gemeinsames Design-System der App (Apple-inspiriert, hell und minimalistisch).
 
-Farben/Schrift für native Widgets kommen aus .streamlit/config.toml; dieses Modul ergänzt
-Glassmorphism-Karten, Hero-Header, Chat-Bubbles und Hover-States. Icons sind Lucide-SVGs.
+Basisfarben für native Widgets kommen aus .streamlit/config.toml; dieses Modul ergänzt
+Typografie, Layout, Karten, Chat-Bubbles und Fokuszustände. Icons sind Lucide-SVGs.
 """
 
 import html
@@ -16,39 +16,58 @@ _ICON_PATHS = {
     '<path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/>'
     '<path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/>',
     "gauge": '<path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/>',
-    "sparkles": '<path d="M9.94 15.5A2 2 0 0 0 8.5 14.06l-6.14-1.58a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5'
-    'l1.58-6.14a.5.5 0 0 1 .96 0L14.06 8.5A2 2 0 0 0 15.5 9.94l6.14 1.58a.5.5 0 0 1 0 .96L15.5 14.06'
-    'a2 2 0 0 0-1.44 1.44l-1.58 6.14a.5.5 0 0 1-.96 0z"/>',
-    "arrow-right": '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
+    "chevron-right": '<path d="m9 18 6-6-6-6"/>',
     "link": '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>'
     '<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
     "upload": '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/>',
     "search": '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
     "clock": '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
 }
+# Gefüllte Markenlogos (Simple Icons, 24x24)
+_BRAND_PATHS = {
+    "github": '<path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 '
+    "0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744"
+    ".084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305"
+    ".76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 "
+    "1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23"
+    ".645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 "
+    "2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12\"/>",
+    "linkedin": '<path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 '
+    "2.939v5.667H9.351V9h3.414v1.561h.046c.477-.948 1.637-1.84 3.37-1.84 3.601 0 4.267 2.37 4.267 4.874v5.857z"
+    "M5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 "
+    "1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542"
+    "C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z\"/>",
+}
+_ICON_SIZES = (14, 16, 20, 28, 32)
+
+SOCIAL_LINKS = [
+    ("GitHub", "https://github.com/umalanyali", "github"),
+    ("LinkedIn", "https://www.linkedin.com/in/ualanyal/", "linkedin"),
+]
 
 
-_ICON_SIZES = (16, 24, 28)
-
-
-def icon(name: str, size: int = 24) -> str:
-    """Dekoratives Icon. st.html entfernt Inline-<svg>, daher als CSS-Maske (färbt sich per currentColor)."""
-    if name not in _ICON_PATHS or size not in _ICON_SIZES:
+def icon(name: str, size: int = 28) -> str:
+    """Dekoratives Icon. Streamlit entfernt Inline-<svg>, daher als CSS-Maske (färbt sich per currentColor)."""
+    if (name not in _ICON_PATHS and name not in _BRAND_PATHS) or size not in _ICON_SIZES:
         raise ValueError(f"Unbekanntes Icon/Größe: {name}/{size}")
     return f'<span class="ui-icon ui-icon-{size} i-{name}" aria-hidden="true"></span>'
 
 
 def _icon_css() -> str:
     rules = [
-        ".ui-icon { display: inline-block; flex: none; vertical-align: -0.2em; background-color: currentColor;"
+        ".ui-icon { display: inline-block; flex: none; vertical-align: -0.15em; background-color: currentColor;"
         " -webkit-mask: var(--icon) center / contain no-repeat; mask: var(--icon) center / contain no-repeat; }"
     ]
     rules += [f".ui-icon-{s} {{ width: {s}px; height: {s}px; }}" for s in _ICON_SIZES]
     for name, paths in _ICON_PATHS.items():
+        stroke = 2.5 if name == "chevron-right" else 1.5
         svg = (
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" '
-            f'stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{paths}</svg>'
+            f'stroke-width="{stroke}" stroke-linecap="round" stroke-linejoin="round">{paths}</svg>'
         )
+        rules.append(f'.i-{name} {{ --icon: url("data:image/svg+xml,{quote(svg)}"); }}')
+    for name, paths in _BRAND_PATHS.items():
+        svg = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black">{paths}</svg>'
         rules.append(f'.i-{name} {{ --icon: url("data:image/svg+xml,{quote(svg)}"); }}')
     return "\n".join(rules)
 
@@ -56,248 +75,200 @@ def _icon_css() -> str:
 _CSS = """
 <style>
 :root {
-  --bg: #0f1117;
-  --surface: rgba(23, 28, 39, 0.62);
-  --surface-hover: rgba(30, 36, 51, 0.78);
-  --border: rgba(148, 163, 184, 0.14);
-  --border-strong: rgba(165, 180, 252, 0.45);
-  --text: #e6e9f2;
-  --muted: #9aa3b5;
-  --accent: #a5b4fc;
-  --grad: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-  --grad-soft: linear-gradient(135deg, rgba(59, 130, 246, 0.18), rgba(139, 92, 246, 0.18));
-  --glow: 0 18px 40px -18px rgba(124, 58, 237, 0.55);
-  --radius: 16px;
-  --blur: blur(16px);
-  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --bg: #FFFFFF;
+  --bg-alt: #F5F5F7;
+  --text: #1D1D1F;
+  --text-2: #6E6E73;
+  --accent: #0071E3;
+  --accent-hover: #0077ED;
+  --border: #D2D2D7;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --font: -apple-system, "SF Pro Display", "SF Pro Text", BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
-/* ---------- Fläche & Typografie ---------- */
-.stApp {
-  background:
-    radial-gradient(1100px 560px at 8% -12%, rgba(59, 130, 246, 0.13), transparent 60%),
-    radial-gradient(900px 520px at 100% 0%, rgba(139, 92, 246, 0.12), transparent 60%),
-    var(--bg);
-}
-.stApp, .stApp p, .stApp li { font-feature-settings: "cv11", "ss01"; }
-.stApp p, .stApp li { line-height: 1.65; }
+/* ---------- Grundlagen ---------- */
+.stApp { background: var(--bg); }
+.stApp *:not([translate="no"]):not([data-testid="stIconMaterial"]):not(code):not(pre):not(pre *) { font-family: var(--font); }
+.stApp { -webkit-font-smoothing: antialiased; color: var(--text); }
+:where([data-testid="stMain"]) :where(p, li) { font-size: 17px; line-height: 1.6; }
 [data-testid="stHeader"] { background: transparent; }
-[data-testid="stMainBlockContainer"] { max-width: 1180px; padding-top: 2.5rem; padding-bottom: 4rem; }
+[data-testid="stMainBlockContainer"] { max-width: 960px; padding: 48px 24px 96px; }
 [data-testid="stAppDeployButton"] { display: none; }
+a { color: var(--accent); }
+
+.label {
+  display: block; font-size: 13px; font-weight: 500; letter-spacing: 0.02em;
+  text-transform: uppercase; color: var(--text-2); margin: 0 0 8px;
+}
 
 /* ---------- Sidebar ---------- */
-[data-testid="stSidebar"] { border-right: 1px solid var(--border); }
-[data-testid="stSidebarNav"] a {
-  border-radius: 10px;
-  transition: background-color .2s var(--ease), color .2s var(--ease);
-}
-[data-testid="stSidebarNav"] a:hover { background: rgba(129, 140, 248, 0.10); }
-[data-testid="stSidebarNav"] a[aria-current="page"] {
-  background: var(--grad-soft);
-  box-shadow: inset 0 0 0 1px rgba(129, 140, 248, 0.25);
-}
-[data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
-  font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+[data-testid="stSidebar"] { background: var(--bg); }
+[data-testid="stSidebarNav"] a { border-radius: 8px; transition: background-color .15s ease; }
+[data-testid="stSidebarNav"] a:hover { background: var(--bg-alt); }
+[data-testid="stSidebarNav"] a[aria-current="page"] { background: var(--bg-alt); }
+[data-testid="stSidebarNav"] a[aria-current="page"] span { color: var(--text); font-weight: 600; }
+[data-testid="stNavSectionHeader"], [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
+  font-size: 13px !important; font-weight: 500 !important; letter-spacing: 0.02em;
+  text-transform: uppercase; color: var(--text-2) !important;
 }
 
-/* ---------- Hero ---------- */
-.hero {
-  display: flex; align-items: flex-start; gap: 1.25rem;
-  padding: 0 0 1.75rem; margin-bottom: 1.75rem;
-  border-bottom: 1px solid var(--border);
-  animation: fade-up .45s var(--ease) both;
+/* ---------- Seitenkopf ---------- */
+.page-header { padding: 0 0 32px; margin: 0 0 40px; border-bottom: 1px solid var(--border); }
+.page-header h1 {
+  font-size: 40px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1;
+  color: var(--text); margin: 0; padding: 0;
 }
-.hero--center { flex-direction: column; align-items: center; text-align: center; border-bottom: 0; padding: 1.5rem 0 1rem; }
-.hero-icon {
-  flex: none; display: grid; place-items: center;
-  width: 56px; height: 56px; border-radius: 16px;
-  background: var(--grad); color: #fff; box-shadow: var(--glow);
-}
-.eyebrow {
-  display: inline-block; font-size: .75rem; font-weight: 600; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--accent); margin-bottom: .35rem;
-}
-.hero h1 {
-  font-size: clamp(1.9rem, 3.2vw, 2.6rem); font-weight: 800; letter-spacing: -0.025em;
-  line-height: 1.1; margin: 0; padding: 0;
-  background: linear-gradient(135deg, #ffffff 35%, #c4b5fd 100%);
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-}
-.hero--center h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); }
-.hero p { color: var(--muted); font-size: 1.05rem; margin: .6rem 0 0; max-width: 680px; }
+.page-header p { font-size: 17px; line-height: 1.6; color: var(--text-2); margin: 12px 0 0; max-width: 640px; }
 
-/* ---------- Glass-Karten ---------- */
-.glass {
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-  backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+.home-hero { text-align: center; padding: 48px 0; }
+.home-hero h1 {
+  font-size: 56px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.07;
+  color: var(--text); margin: 0; padding: 0;
 }
-.feature-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; margin-top: 1.5rem; }
-@media (max-width: 900px) { .feature-grid { grid-template-columns: 1fr; } }
+.home-hero p { font-size: 21px; line-height: 1.5; color: var(--text-2); margin: 16px auto 0; max-width: 600px; }
+@media (max-width: 640px) {
+  .home-hero h1 { font-size: 40px; }
+  .page-header h1 { font-size: 32px; }
+}
+
+/* ---------- Karten ---------- */
+.card { background: var(--bg); border-radius: 16px; box-shadow: var(--shadow); padding: 24px; }
+.feature-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+@media (max-width: 820px) { .feature-grid { grid-template-columns: 1fr; } }
 .feature-card {
-  display: flex; flex-direction: column; gap: .9rem; padding: 1.75rem;
-  text-decoration: none !important; color: var(--text) !important; cursor: pointer;
-  transition: transform .25s var(--ease), border-color .25s var(--ease), box-shadow .25s var(--ease), background-color .25s var(--ease);
-  animation: fade-up .5s var(--ease) both;
+  display: flex; flex-direction: column; gap: 12px;
+  text-decoration: none !important; color: var(--text) !important;
+  transition: box-shadow .2s ease;
 }
-.feature-card:nth-child(2) { animation-delay: .06s; }
-.feature-card:nth-child(3) { animation-delay: .12s; }
-.feature-card:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: var(--glow); background: var(--surface-hover); }
+.feature-card:hover { box-shadow: var(--shadow-hover); }
 .feature-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-.feature-card .card-icon {
-  display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px;
-  background: var(--grad-soft); border: 1px solid rgba(129, 140, 248, .25); color: #c4b5fd;
-}
-.feature-card h3 { font-size: 1.15rem; font-weight: 700; margin: 0; padding: 0; color: var(--text); }
-.feature-card p { color: var(--muted); margin: 0; font-size: .95rem; }
-.card-footer {
-  margin-top: auto; padding-top: .5rem; display: flex; align-items: center; justify-content: space-between;
-  font-size: .85rem; font-weight: 600; color: var(--accent);
-}
-.card-footer .ui-icon { transition: transform .25s var(--ease); }
-.feature-card:hover .card-footer .ui-icon { transform: translateX(4px); }
-.chip {
-  display: inline-flex; align-items: center; padding: .2rem .6rem; border-radius: 999px;
-  font-size: .72rem; font-weight: 600; color: var(--muted);
-  background: rgba(148, 163, 184, .08); border: 1px solid var(--border);
-}
-.chip-row { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; margin-top: 2.5rem; }
+.feature-card .ui-icon { color: var(--accent); }
+.feature-card h3 { font-size: 21px; font-weight: 600; letter-spacing: -0.01em; color: var(--text); margin: 8px 0 0; padding: 0; }
+.feature-card p { font-size: 15px; line-height: 1.5; color: var(--text-2); margin: 0; }
+.card-link { margin-top: auto; padding-top: 8px; font-size: 15px; color: var(--accent); display: inline-flex; align-items: center; gap: 2px; }
+.feature-card:hover .card-link { text-decoration: underline; }
+.card-link .ui-icon { transition: transform .2s ease; }
+.feature-card:hover .card-link .ui-icon { transform: translateX(2px); }
+.card-status { margin-top: auto; padding-top: 8px; font-size: 13px; font-weight: 500; letter-spacing: 0.02em; text-transform: uppercase; color: var(--text-2); }
+.stack-note { text-align: center; margin: 48px 0 0; font-size: 13px; color: var(--text-2); }
 
-/* ---------- Leerer Zustand ---------- */
-.empty-state { text-align: center; padding: 3rem 1.5rem; animation: fade-up .45s var(--ease) both; }
-.empty-state .card-icon {
-  display: inline-grid; place-items: center; width: 52px; height: 52px; border-radius: 16px;
-  background: var(--grad-soft); border: 1px solid rgba(129, 140, 248, .25); color: #c4b5fd; margin-bottom: 1rem;
-}
-.empty-state h3 { font-size: 1.15rem; font-weight: 700; margin: 0 0 .35rem; padding: 0; }
-.empty-state p { color: var(--muted); margin: 0 auto; max-width: 460px; }
+/* z-index über Streamlits Header (999990), sonst sind die Icons sichtbar, aber nicht klickbar */
+.social-corner { position: fixed; top: 20px; right: 24px; z-index: 999991; display: flex; gap: 16px; }
+.social-corner a { display: flex; color: #6E6E73 !important; transition: color .15s ease; }
+.social-corner a:hover { color: #1D1D1F !important; }
+
+.empty-state { text-align: center; padding: 48px 24px; }
+.empty-state .ui-icon { color: var(--text-2); }
+.empty-state h3 { font-size: 21px; font-weight: 600; color: var(--text); margin: 16px 0 8px; padding: 0; }
+.empty-state p { font-size: 17px; line-height: 1.6; color: var(--text-2); margin: 0 auto; max-width: 440px; }
 
 /* ---------- Buttons ---------- */
-button[kind="primary"], button[kind="primaryFormSubmit"] {
-  background: var(--grad) !important; border: 0 !important; color: #fff !important; font-weight: 600;
-  box-shadow: 0 8px 22px -10px rgba(124, 58, 237, .7);
-  transition: transform .2s var(--ease), box-shadow .2s var(--ease), filter .2s var(--ease);
+.stApp button[kind="primary"], .stApp button[kind="primaryFormSubmit"] {
+  background: var(--accent) !important; color: #FFFFFF !important; border: none !important;
+  border-radius: 980px !important; font-size: 15px; font-weight: 400; padding: 8px 20px;
+  transition: background-color .15s ease;
 }
-button[kind="primary"]:hover:not(:disabled), button[kind="primaryFormSubmit"]:hover:not(:disabled) {
-  transform: translateY(-1px); filter: brightness(1.1); box-shadow: 0 12px 28px -10px rgba(124, 58, 237, .85);
+.stApp button[kind="primary"]:hover:not(:disabled), .stApp button[kind="primaryFormSubmit"]:hover:not(:disabled) {
+  background: var(--accent-hover) !important;
 }
-button[kind="primary"]:active, button[kind="primaryFormSubmit"]:active { transform: translateY(0); }
-button[kind="primary"]:disabled, button[kind="primaryFormSubmit"]:disabled { opacity: .45; box-shadow: none; }
-button[kind="secondary"], [data-testid="stDownloadButton"] button {
-  background: var(--surface) !important; border: 1px solid var(--border) !important;
-  transition: border-color .2s var(--ease), background-color .2s var(--ease);
+.stApp button[kind="primary"]:disabled, .stApp button[kind="primaryFormSubmit"]:disabled { opacity: .4; }
+.stApp button[kind="secondary"], [data-testid="stDownloadButton"] button {
+  background: var(--bg-alt) !important; color: var(--text) !important; border: none !important;
+  border-radius: 980px !important; transition: background-color .15s ease;
 }
-button[kind="secondary"]:hover, [data-testid="stDownloadButton"] button:hover {
-  border-color: var(--border-strong) !important; background: var(--surface-hover) !important;
-}
-.stApp button:focus-visible { outline: 2px solid var(--accent) !important; outline-offset: 2px; }
+.stApp button[kind="secondary"]:hover, [data-testid="stDownloadButton"] button:hover { background: #E8E8ED !important; }
+.stApp button:focus-visible, .stApp a:focus-visible { outline: 2px solid var(--accent) !important; outline-offset: 2px; }
 
 /* ---------- Eingaben ---------- */
-[data-baseweb="input"], [data-baseweb="textarea"] { transition: border-color .2s var(--ease), box-shadow .2s var(--ease); }
+[data-baseweb="input"], [data-baseweb="textarea"] {
+  background: var(--bg) !important; border: 1px solid var(--border) !important; border-radius: 10px !important;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+[data-baseweb="input"] input, [data-baseweb="textarea"] textarea { background: transparent !important; }
 [data-baseweb="input"]:focus-within, [data-baseweb="textarea"]:focus-within {
-  border-color: #818cf8 !important; box-shadow: 0 0 0 3px rgba(129, 140, 248, .22);
+  border-color: var(--accent) !important; box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15);
 }
-[data-testid="stForm"] { border: 1px solid var(--border); background: var(--surface); border-radius: var(--radius); }
+[data-testid="stForm"] { border: none; padding: 0; background: transparent; }
 [data-testid="stFileUploaderDropzone"] {
-  background: var(--surface); border: 1px dashed rgba(148, 163, 184, .3); border-radius: 14px;
-  transition: border-color .2s var(--ease), background-color .2s var(--ease);
+  background: var(--bg); border: 1px dashed var(--border); border-radius: 12px;
+  flex-direction: column; justify-content: center; text-align: center; gap: 8px; padding: 24px 16px;
+  transition: border-color .15s ease;
 }
-[data-testid="stFileUploaderDropzone"]:hover { border-color: var(--border-strong); background: var(--surface-hover); }
+[data-testid="stFileUploaderDropzone"]:hover { border-color: var(--accent); }
+[data-testid="stFileUploaderDropzoneInstructions"] { margin: 0; }
 
 /* ---------- Expander / Status ---------- */
-[data-testid="stExpander"] details {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
-  backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-}
-[data-testid="stExpander"] summary { transition: color .2s var(--ease); }
+[data-testid="stExpander"] details { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
 [data-testid="stExpander"] summary:hover { color: var(--accent); }
 
-/* ---------- Chat-Bubbles ---------- */
+/* ---------- Chat ---------- */
+[data-testid="stChatMessageAvatarUser"], [data-testid="stChatMessageAvatarAssistant"] { display: none; }
 [data-testid="stChatMessage"] {
-  width: fit-content; max-width: min(88%, 860px); gap: .75rem;
-  padding: 1rem 1.25rem; margin-bottom: .75rem;
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 20px 20px 20px 6px;
-  backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-  animation: fade-up .3s var(--ease) both;
+  width: fit-content; max-width: 80%; padding: 12px 18px; margin-bottom: 12px;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 18px;
 }
 [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
-  flex-direction: row-reverse; margin-left: auto;
-  background: var(--grad); border-color: transparent;
-  border-radius: 20px 20px 6px 20px;
-  box-shadow: 0 10px 26px -14px rgba(124, 58, 237, .8);
+  margin-left: auto; background: var(--bg-alt); border-color: transparent;
 }
-[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) * { color: #fff; }
-[data-testid="stChatMessageAvatarUser"], [data-testid="stChatMessageAvatarAssistant"] {
-  border-radius: 10px; width: 2rem; height: 2rem;
-}
-[data-testid="stChatMessageAvatarAssistant"] { background: var(--grad); color: #fff; }
-[data-testid="stChatMessageAvatarUser"] { background: rgba(255, 255, 255, .18); color: #fff; }
 [data-testid="stChatMessageContent"] { min-width: 0; }
 [data-testid="stChatInput"] > div {
-  background: var(--surface) !important; border: 1px solid var(--border) !important; border-radius: 16px !important;
-  backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-  transition: border-color .2s var(--ease), box-shadow .2s var(--ease);
+  background: var(--bg) !important; border: 1px solid var(--border) !important; border-radius: 22px !important;
+  transition: border-color .15s ease, box-shadow .15s ease;
 }
-[data-testid="stChatInput"] > div:focus-within { border-color: #818cf8 !important; box-shadow: 0 0 0 3px rgba(129, 140, 248, .2); }
+[data-testid="stChatInput"] > div:focus-within { border-color: var(--accent) !important; box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15); }
 
 /* ---------- Quellen ---------- */
-.source-card {
-  display: flex; gap: .75rem; padding: .75rem .9rem; margin-bottom: .5rem;
-  background: rgba(129, 140, 248, .06); border: 1px solid var(--border); border-radius: 12px;
-  transition: border-color .2s var(--ease), background-color .2s var(--ease);
-}
-.source-card:hover { border-color: var(--border-strong); background: rgba(129, 140, 248, .1); }
-.source-card .source-icon { flex: none; color: var(--accent); margin-top: .1rem; }
-.source-card .source-title { font-weight: 600; font-size: .9rem; margin-bottom: .2rem; }
+.source-card { display: flex; gap: 12px; padding: 12px 14px; margin-bottom: 8px; background: var(--bg-alt); border-radius: 12px; }
+.source-card .source-icon { color: var(--text-2); margin-top: 3px; }
+.source-card .source-title { font-size: 15px; font-weight: 600; margin-bottom: 2px; color: var(--text); }
 .source-card .source-title a { color: var(--text) !important; text-decoration: none; }
 .source-card .source-title a:hover { color: var(--accent) !important; text-decoration: underline; }
-.source-card .source-snippet { color: var(--muted); font-size: .84rem; line-height: 1.5; }
+.source-card .source-snippet { font-size: 13px; line-height: 1.5; color: var(--text-2); }
 
 /* ---------- Report ---------- */
-.st-key-report {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
-  padding: 2rem 2.25rem; backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-  animation: fade-up .45s var(--ease) both;
-}
+.st-key-report { background: var(--bg); border-radius: 16px; box-shadow: var(--shadow); padding: 32px; margin-bottom: 16px; }
 .st-key-report h2 {
-  font-size: 1.25rem; font-weight: 700; margin-top: 1.75rem; padding: 0 0 0 .8rem;
-  border-left: 3px solid; border-image: var(--grad) 1;
+  font-size: 28px; font-weight: 600; letter-spacing: -0.01em; color: var(--text);
+  margin: 40px 0 12px; padding: 0;
 }
-.st-key-report h2:first-of-type { margin-top: .25rem; }
-.st-key-report table { width: 100%; border-collapse: collapse; font-size: .92rem; }
-.st-key-report th { background: rgba(129, 140, 248, .12); text-align: left; }
-.st-key-report th, .st-key-report td { padding: .6rem .8rem; border: 1px solid var(--border); }
-.report-meta { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.25rem; }
+.st-key-report h2:first-of-type { margin-top: 0; }
+.st-key-report table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.st-key-report th { background: var(--bg-alt); text-align: left; font-weight: 600; }
+.st-key-report th, .st-key-report td { padding: 10px 12px; border: 1px solid var(--border); }
 
-/* ---------- Bewegung ---------- */
-@keyframes fade-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation: none !important; transition: none !important; }
+  *, *::before, *::after { transition: none !important; animation: none !important; }
 }
 </style>
 """
 
 
 def apply_theme() -> None:
-    st.html(_CSS.replace("</style>", _icon_css() + "\n</style>"))
+    st.markdown(_CSS.replace("</style>", _icon_css() + "\n</style>"), unsafe_allow_html=True)
 
 
-def hero(icon_name: str, title: str, description: str, eyebrow: str = "") -> None:
-    eyebrow_html = f'<span class="eyebrow">{html.escape(eyebrow)}</span>' if eyebrow else ""
+def social_links() -> None:
+    """GitHub/LinkedIn als reine Icons oben rechts – app.py läuft bei jedem Seitenaufruf, also überall sichtbar."""
+    links = "".join(
+        f'<a href="{url}" rel="noopener" aria-label="{name}" title="{name}">{icon(key, 20)}</a>'
+        for name, url, key in SOCIAL_LINKS
+    )
+    st.markdown(f'<nav class="social-corner" aria-label="Profile">{links}</nav>', unsafe_allow_html=True)
+
+
+def page_header(title: str, description: str, label: str = "") -> None:
+    label_html = f'<span class="label">{html.escape(label)}</span>' if label else ""
     st.html(
-        f"""<section class="hero">
-            <div class="hero-icon">{icon(icon_name, 28)}</div>
-            <div>{eyebrow_html}<h1>{html.escape(title)}</h1><p>{html.escape(description)}</p></div>
-        </section>"""
+        f'<header class="page-header">{label_html}<h1>{html.escape(title)}</h1>'
+        f"<p>{html.escape(description)}</p></header>"
     )
 
 
 def empty_state(icon_name: str, title: str, text: str) -> None:
     st.html(
-        f"""<div class="glass empty-state">
-            <div class="card-icon">{icon(icon_name, 24)}</div>
-            <h3>{html.escape(title)}</h3><p>{html.escape(text)}</p>
-        </div>"""
+        f'<div class="card empty-state">{icon(icon_name, 32)}'
+        f"<h3>{html.escape(title)}</h3><p>{html.escape(text)}</p></div>"
     )
 
 
@@ -307,7 +278,7 @@ def source_card(title: str, snippet: str, url: str | None = None) -> str:
     if url:
         title_html = f'<a href="{html.escape(url, quote=True)}" rel="noopener">{title_html}</a>'
     return (
-        f'<div class="source-card"><span class="source-icon">{icon("link" if url else "file-text", 16)}</span>'
+        f'<div class="source-card"><span class="source-icon">{icon("link" if url else "file-text", 14)}</span>'
         f'<div><div class="source-title">{title_html}</div>'
         f'<div class="source-snippet">{html.escape(snippet)}</div></div></div>'
     )
