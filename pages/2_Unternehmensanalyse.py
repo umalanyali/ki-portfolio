@@ -1,7 +1,6 @@
 import html
 import json
 import os
-import re
 from datetime import date
 
 import streamlit as st
@@ -11,7 +10,9 @@ from langchain_core.messages import AIMessage, ToolMessage
 from langchain_openai import ChatOpenAI
 from langchain_tavily import TavilySearch
 
-from utils.ui import empty_state, page_header, source_card
+from utils import pdf as pdf_style
+from utils.pdf import ReportPDF, pdf_filename
+from utils.ui import action_bar, empty_state, page_header, source_card
 
 load_dotenv()
 
@@ -135,15 +136,30 @@ def render_sources(sources: list[dict]) -> None:
         st.html("".join(source_card(s["title"], s["snippet"], s["url"]) for s in sources))
 
 
-def slugify(text: str) -> str:
-    return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-") or "unternehmen"
+def generate_pdf_report(data: dict) -> bytes:
+    """Erzeugt die Unternehmensanalyse als PDF. `data` ist st.session_state.analysis."""
+    pdf = ReportPDF("Unternehmensanalyse Report", [data["company"], data["industry"]])
+    pdf.markdown(data["report"])
+    if data["sources"]:
+        pdf.section("Quellen")
+        for i, s in enumerate(data["sources"], 1):
+            pdf.write_text(f"{i}. {s['title']}", size=9.5, style="B", height=5)
+            pdf.write_text(s["url"], size=8.5, color=pdf_style.GRAY, height=4.5)
+            pdf.ln(1)
+    return pdf.to_bytes()
+
+
+def new_analysis() -> None:
+    st.session_state.analysis = None
+    st.session_state.ua_company = ""
+    st.session_state.ua_industry = ""
 
 
 # --- Session State ---
 st.session_state.setdefault("analysis", None)
 
-# --- Header ---
-page_header(
+# --- Sticky Kopf: Titel + Eingabe (bleibt auch beim Lesen des Reports sichtbar) ---
+header = page_header(
     "Unternehmensanalyse",
     "Gib einen Firmennamen ein – der KI-Agent recherchiert selbstständig im Web und erstellt "
     "einen strukturierten Report inklusive KI-Potenzialen.",
@@ -158,29 +174,24 @@ if missing:
     )
     st.stop()
 
-# --- Sidebar: Eingabe ---
-with st.sidebar:
-    st.header("Unternehmen")
-    with st.form("analyse_form"):
-        company = st.text_input("Firmenname *", placeholder="z. B. Siemens")
-        industry = st.text_input(
+with header:
+    with st.form("analyse_form", border=False):
+        col_company, col_industry, col_submit = st.columns([3, 3, 2], vertical_alignment="bottom")
+        company = col_company.text_input("Firmenname", key="ua_company", placeholder="z. B. Siemens")
+        industry = col_industry.text_input(
             "Branche (optional)",
+            key="ua_industry",
             placeholder="z. B. Industrieautomatisierung",
             help="Hilft dem Agenten bei mehrdeutigen Firmennamen.",
         )
-        submitted = st.form_submit_button("Analyse starten", type="primary", use_container_width=True)
+        submitted = col_submit.form_submit_button("Analyse starten", type="primary", use_container_width=True)
+    hint = st.empty()
 
-    if st.session_state.analysis:
-        st.divider()
-        if st.button("Ergebnis löschen", use_container_width=True):
-            st.session_state.analysis = None
-            st.rerun()
-
-# --- Analyse ausführen ---
+# --- Inhalt: Recherche-Status, Platzhalter oder Report ---
 if submitted:
     company, industry = company.strip(), industry.strip()
     if not company:
-        st.sidebar.warning("Bitte einen Firmennamen eingeben.")
+        hint.warning("Bitte einen Firmennamen eingeben.")
     else:
         with st.status(f"Agent recherchiert zu „{company}“ …", expanded=True) as status:
             try:
@@ -205,20 +216,15 @@ if submitted:
                     status.update(label="Kein Report erzeugt", state="error")
                     st.error("Der Agent hat keinen Report geliefert. Bitte erneut versuchen.")
 
-# --- Ergebnis ---
 analysis = st.session_state.analysis
 if analysis is None:
     empty_state(
         "search",
         "Bereit für die Recherche",
-        "Gib links einen Firmennamen ein und klicke auf „Analyse starten“. "
+        "Gib oben einen Firmennamen ein und klicke auf „Analyse starten“. "
         "Der Agent sucht, liest und fasst die Ergebnisse zusammen.",
     )
     st.stop()
-
-header = f"Analyse: {analysis['company']}"
-if analysis["industry"]:
-    header += f" · {analysis['industry']}"
 
 with st.container(key="report"):
     meta = [analysis["company"], analysis["industry"], f"{len(analysis['sources'])} Quellen"]
@@ -227,10 +233,16 @@ with st.container(key="report"):
 
 render_sources(analysis["sources"])
 
-st.download_button(
-    "Report als Markdown herunterladen",
-    icon=":material/download:",
-    data=f"# {header}\n\n{analysis['report']}\n",
-    file_name=f"analyse-{slugify(analysis['company'])}.md",
-    mime="text/markdown",
-)
+# --- Sticky Fußleiste: erscheint erst mit dem Report und gleitet von unten herein ---
+with action_bar(reveal=True):
+    _, col_new, col_pdf = st.columns([2, 1, 1])
+    col_new.button("Neue Analyse", on_click=new_analysis, use_container_width=True)
+    col_pdf.download_button(
+        label="Als PDF speichern",
+        data=generate_pdf_report(analysis),
+        file_name=pdf_filename("Analyse", analysis["company"]),
+        mime="application/pdf",
+        type="primary",
+        icon=":material/download:",
+        use_container_width=True,
+    )

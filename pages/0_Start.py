@@ -10,34 +10,27 @@ AGENTS = [
         "title": "Dokument-Assistent",
         "description": "Fragen an eigene PDFs stellen – mit Seitenangaben als Quelle.",
         "href": "dokument-assistent",
-        "available": True,
     },
     {
         "icon": "building",
         "title": "Unternehmensanalyse",
         "description": "Ein Agent recherchiert im Web und schreibt einen strukturierten Report.",
         "href": "unternehmensanalyse",
-        "available": True,
     },
     {
         "icon": "gauge",
         "title": "KI-Readiness-Check",
         "description": "Den KI-Reifegrad eines Unternehmens anhand klarer Kriterien bewerten.",
         "href": "ki-readiness-check",
-        "available": False,
     },
 ]
 
 
 def card(agent: dict) -> str:
-    footer = (
-        f'<span class="card-link">Öffnen {icon("chevron-right", 14)}</span>'
-        if agent["available"]
-        else '<span class="card-status">Bald verfügbar</span>'
-    )
     return (
         f'<a class="card feature-card" href="{agent["href"]}">{icon(agent["icon"], 28)}'
-        f'<h3>{html.escape(agent["title"])}</h3><p>{html.escape(agent["description"])}</p>{footer}</a>'
+        f'<h3>{html.escape(agent["title"])}</h3><p>{html.escape(agent["description"])}</p>'
+        f'<span class="card-link">Öffnen {icon("chevron-right", 14)}</span></a>'
     )
 
 

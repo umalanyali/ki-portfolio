@@ -21,7 +21,6 @@ _ICON_PATHS = {
     '<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
     "upload": '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/>',
     "search": '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
-    "clock": '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
 }
 # Gefüllte Markenlogos (Simple Icons, 24x24)
 _BRAND_PATHS = {
@@ -93,8 +92,38 @@ _CSS = """
 .stApp { -webkit-font-smoothing: antialiased; color: var(--text); }
 :where([data-testid="stMain"]) :where(p, li) { font-size: 17px; line-height: 1.6; }
 [data-testid="stHeader"] { background: transparent; }
-[data-testid="stMainBlockContainer"] { max-width: 960px; padding: 48px 24px 96px; }
-[data-testid="stAppDeployButton"] { display: none; }
+[data-testid="stMainBlockContainer"] { max-width: 960px; padding: 1rem 24px 96px; }
+[data-testid="stMainBlockContainer"]:has(.st-key-page-header) { padding-top: 0; }
+[data-testid="stBottomBlockContainer"] { max-width: 960px; padding-left: 24px; padding-right: 24px; }
+/* Unsichtbare Elemente (dieses CSS, Social-Icons) aus dem Fluss nehmen – sonst erzeugen sie je 16px Abstand oben */
+[data-testid="stElementContainer"]:has(> [data-testid="stMarkdown"] style),
+[data-testid="stElementContainer"]:has(.social-corner) { position: absolute; }
+[data-testid="stMainBlockContainer"]:has([class*="st-key-action-bar"]) { padding-bottom: 0 !important; }
+[data-testid="stAppDeployButton"], footer { display: none; }
+
+/* ---------- Sticky Kopf & Aktionsleiste ----------
+   Sticky (nicht fixed): bleibt in der Inhaltsspalte und überdeckt die Sidebar nicht.
+   Streamlit legt um Container mit key einen stLayoutWrapper, der nur so hoch ist wie der
+   Container – deshalb muss der Wrapper sticky sein, nicht der Container selbst. */
+[data-testid="stLayoutWrapper"]:has(> .st-key-page-header) { position: sticky; top: 0; z-index: 100; }
+[data-testid="stLayoutWrapper"]:has(> [class*="st-key-action-bar"]) { position: sticky; bottom: 0; z-index: 100; margin-top: auto; }
+/* Bei kurzem Inhalt die Spalte auf Fensterhöhe strecken, damit die Leiste trotzdem unten sitzt */
+[data-testid="stMainBlockContainer"]:has([class*="st-key-action-bar"]) { min-height: 100dvh; display: flex; flex-direction: column; }
+[data-testid="stMainBlockContainer"]:has([class*="st-key-action-bar"]) > [data-testid="stVerticalBlock"] { flex: 1; }
+.st-key-page-header, [class*="st-key-action-bar"] {
+  background: var(--bg);
+  box-shadow: -8px 0 0 var(--bg), 8px 0 0 var(--bg); /* deckt Kartenschatten ab, die seitlich hervorlugen */
+}
+.st-key-page-header { padding: 16px 0 16px; gap: 12px; border-bottom: 1px solid var(--border); }
+[class*="st-key-action-bar"] { border-top: 1px solid var(--border); padding: 16px 0; }
+/* Reveal-Leiste: gleitet beim Einfügen von unten herein (Keyframes statt Transition,
+   weil Streamlit das Element neu einfügt – eine Transition hätte keinen Ausgangszustand) */
+.st-key-action-bar-reveal { animation: bar-reveal 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+@keyframes bar-reveal { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@media (max-width: 640px), (max-height: 600px) {
+  /* Auf kleinen Bildschirmen würde ein fixierter Kopf zu viel Platz belegen */
+  [data-testid="stLayoutWrapper"]:has(> .st-key-page-header) { position: static; }
+}
 a { color: var(--accent); }
 
 .label {
@@ -114,14 +143,14 @@ a { color: var(--accent); }
 }
 
 /* ---------- Seitenkopf ---------- */
-.page-header { padding: 0 0 32px; margin: 0 0 40px; border-bottom: 1px solid var(--border); }
+.page-header { padding: 0; margin: 0; }
 .page-header h1 {
   font-size: 40px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1;
   color: var(--text); margin: 0; padding: 0;
 }
 .page-header p { font-size: 17px; line-height: 1.6; color: var(--text-2); margin: 12px 0 0; max-width: 640px; }
 
-.home-hero { text-align: center; padding: 48px 0; }
+.home-hero { text-align: center; padding: 24px 0 48px; }
 .home-hero h1 {
   font-size: 56px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.07;
   color: var(--text); margin: 0; padding: 0;
@@ -150,7 +179,6 @@ a { color: var(--accent); }
 .feature-card:hover .card-link { text-decoration: underline; }
 .card-link .ui-icon { transition: transform .2s ease; }
 .feature-card:hover .card-link .ui-icon { transform: translateX(2px); }
-.card-status { margin-top: auto; padding-top: 8px; font-size: 13px; font-weight: 500; letter-spacing: 0.02em; text-transform: uppercase; color: var(--text-2); }
 .stack-note { text-align: center; margin: 48px 0 0; font-size: 13px; color: var(--text-2); }
 
 /* z-index über Streamlits Header (999990), sonst sind die Icons sichtbar, aber nicht klickbar */
@@ -237,6 +265,75 @@ a { color: var(--accent); }
 .st-key-report th { background: var(--bg-alt); text-align: left; font-weight: 600; }
 .st-key-report th, .st-key-report td { padding: 10px 12px; border: 1px solid var(--border); }
 
+/* ---------- KI-Readiness-Check ---------- */
+.st-key-rc-step { background: var(--bg); border-radius: 16px; box-shadow: var(--shadow); padding: 16px 20px; margin: 4px 0 8px; gap: 12px; }
+.rc-step-title { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; color: var(--text); margin: 0; padding: 0; }
+.st-key-rc-step [data-testid="stWidgetLabel"] p { font-size: 15px; font-weight: 500; }
+.st-key-rc-step [data-testid="stRadio"] [role="radiogroup"] label p { font-size: 15px; }
+[data-testid="stProgress"] [role="progressbar"] > div > div,
+[data-testid="stProgress"] [role="progressbar"] > div > div > div { height: 4px !important; }
+
+.rc-score-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 24px; }
+.rc-score-value { display: flex; align-items: baseline; gap: 4px; font-size: 72px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+.rc-score-max { font-size: 32px; font-weight: 500; color: var(--text-2); letter-spacing: 0; }
+
+/* Score-Zähler 0 → Ziel: registrierte Integer-Property wird animiert, Zahl per CSS-Counter angezeigt.
+   Farbe läuft mit: Rot bis 40, dann zu Orange (bis 55), dann zu Grün (bis 70). Dunkle Apple-Töne
+   für ausreichenden Kontrast auf Weiß. Die Keyframes (Zielwert) kommen je Score aus der Seite. */
+@property --rc-n { syntax: '<integer>'; inherits: false; initial-value: 0; }
+.rc-count {
+  font-variant-numeric: tabular-nums; counter-reset: rc-score var(--rc-n);
+  animation-duration: 1.5s; animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1); animation-fill-mode: both;
+  color: color-mix(in srgb,
+    color-mix(in srgb, #D70015, #B25000 calc(clamp(0, (var(--rc-n) - 40) / 15, 1) * 100%)),
+    #248A3D calc(clamp(0, (var(--rc-n) - 55) / 15, 1) * 100%));
+}
+.rc-count::after { content: counter(rc-score); }
+.rc-after-count { animation: rc-fade-in .4s ease 1.5s both; }
+@keyframes rc-fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Lade-Overlay mit ASCII-Roboter: mittig im Fenster über dem (geblurrten) Fragebogen */
+.st-key-rc-loading {
+  position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 4px; background: rgba(255, 255, 255, 0.35);
+}
+.st-key-rc-loading > [data-testid="stElementContainer"] { width: auto !important; }
+.st-key-rc-loading [data-testid="stCode"] { width: auto; box-shadow: var(--shadow); border-radius: 16px; }
+.st-key-rc-loading pre { margin: 0; padding: 20px 24px !important; font-size: 15px; line-height: 1.35; background: var(--bg) !important; border-radius: 16px; }
+.st-key-rc-loading [data-testid="stCaptionContainer"] { text-align: center; }
+.rc-status { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 980px; font-size: 15px; font-weight: 600; }
+.rc-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.rc-tone-green, .rc-status-green { color: #248A3D; }
+.rc-tone-amber, .rc-status-amber { color: #B25000; }
+.rc-tone-red, .rc-status-red { color: #D70015; }
+.rc-status-green { background: #EAF7EE; }
+.rc-status-amber { background: #FFF4E5; }
+.rc-status-red { background: #FFF0F0; }
+.rc-summary { font-size: 19px; line-height: 1.55; color: var(--text); max-width: 720px; margin: 8px 0 0; }
+
+.rc-section { font-size: 28px; font-weight: 600; letter-spacing: -0.01em; color: var(--text); margin: 48px 0 16px; padding: 0; }
+.rc-cats { display: grid; gap: 14px; }
+.rc-cat { display: grid; grid-template-columns: 180px 1fr 48px; align-items: center; gap: 16px; font-size: 15px; }
+.rc-bar { height: 6px; border-radius: 3px; background: var(--bg-alt); overflow: hidden; }
+.rc-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; }
+.rc-cat-value { text-align: right; color: var(--text-2); font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) { .rc-cat { grid-template-columns: 1fr 48px; } .rc-bar { grid-column: 1 / -1; grid-row: 2; } }
+
+.rc-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 820px) { .rc-grid { grid-template-columns: 1fr; } }
+.rc-point h3, .rc-rec h3 { font-size: 17px; font-weight: 600; color: var(--text); margin: 0 0 6px; padding: 0; }
+.rc-point p, .rc-rec p { font-size: 15px; line-height: 1.5; color: var(--text-2); margin: 0; }
+.rc-recs { display: grid; gap: 12px; }
+.rc-rec-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.rc-badge { flex: none; font-size: 12px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; padding: 4px 10px; border-radius: 980px; }
+.rc-badge-hoch { color: #D70015; background: #FFF0F0; }
+.rc-badge-mittel { color: #B25000; background: #FFF4E5; }
+.rc-badge-niedrig { color: var(--text-2); background: var(--bg-alt); }
+.rc-time-value { font-size: 28px; font-weight: 700; letter-spacing: -0.01em; color: var(--text); }
+.rc-time p { font-size: 15px; line-height: 1.5; color: var(--text-2); margin: 6px 0 0; }
+.rc-note { font-size: 13px; color: var(--text-2); margin: 24px 0; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
@@ -257,12 +354,23 @@ def social_links() -> None:
     st.markdown(f'<nav class="social-corner" aria-label="Profile">{links}</nav>', unsafe_allow_html=True)
 
 
-def page_header(title: str, description: str, label: str = "") -> None:
+def page_header(title: str, description: str, label: str = ""):
+    """Sticky Seitenkopf. Gibt den Container zurück, damit Seiten z. B. Fortschritt oder Score anhängen können."""
     label_html = f'<span class="label">{html.escape(label)}</span>' if label else ""
-    st.html(
+    header = st.container(key="page-header")
+    header.html(
         f'<header class="page-header">{label_html}<h1>{html.escape(title)}</h1>'
         f"<p>{html.escape(description)}</p></header>"
     )
+    return header
+
+
+def action_bar(reveal: bool = False):
+    """Sticky Leiste am unteren Rand für die Hauptaktionen. Muss das letzte Element der Seite sein.
+
+    reveal=True: Leiste gleitet beim Erscheinen von unten herein (z. B. sobald ein Report vorliegt).
+    """
+    return st.container(key="action-bar-reveal" if reveal else "action-bar")
 
 
 def empty_state(icon_name: str, title: str, text: str) -> None:
